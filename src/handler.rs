@@ -2,11 +2,11 @@
 use crate::{Context, Response};
 use hyper::StatusCode;
 use serde::Deserialize;
+use std::fs;
 use std::fs::File;
 use std::fs::OpenOptions;
-use std::io::BufReader;
 use std::io::prelude::*;
-use std::fs;
+use std::io::BufReader;
 use std::path::Path;
 
 pub async fn test_handler(ctx: Context) -> String {
@@ -44,90 +44,125 @@ pub async fn param_handler(ctx: Context) -> String {
         Some(v) => v,
         None => "empty",
     };
-    let days =  writefl(param);
 
-    
-    format!("param called, param was: {}",days)
+    let days;
+    if !check_if_exists(param) {
+        days = writefl(param);
+    } else {
+        days = read_line(param);
+    }
+    format!("param called, param was: {}", days)
 }
 
+fn read_line(src_str: &str) -> i32 {
+    let contents = fs::read_to_string("foo.txt").expect("err");
+    let mut return_days: i32 = 30;
+    for line in contents.lines() {
+        if line.contains(src_str) {
+            let mut days_remaining: String = line.chars().skip(line.len() - 2).take(2).collect();
+            let mut my_int;
+            if !days_remaining.contains(">") {
+                my_int = days_remaining.parse::<i32>().unwrap();
+            } else {
+                days_remaining = line.chars().skip(line.len() - 1).take(1).collect();
+                my_int = days_remaining.parse::<i32>().unwrap();
+            }
+            my_int -= 1;
+            println!(" {} ", days_remaining);
+            return_days = my_int;
+        }
+    }
+    return return_days;
+}
 
-fn writefl(str: &str) ->i32{
-    //  let data:String =  "this is a fucking str1 ->".to_owned()+str+"\n";
-    let mut return_days:i32 = 30;
-      let data:String  =  str.to_owned()+"->30\n";
-      if Path::new("foo.txt").exists() {
-          let mut file1  =  OpenOptions::new().create(true).write(true).append(true).open("foo.txt").unwrap();
-          if !check_if_exists(&str){
-  
-              file1.write_all(data.as_bytes()).expect("err");
-          }else{
-              /*let mut contents = readfl();
-              let index = contents.find(&str);
-              println!("Found ");*/
-           return_days =   seek_and_changefl3(&str,"foo.txt");
-          }
-      }else{
-      //    readfl().map_err(|err| println!("{:?}", err)).ok();
-      let mut file1  =  OpenOptions::new().create(true).write(true).append(true).open("foo.txt").unwrap();
-      file1.write_all(data.as_bytes()).expect("err");
-      }
-      /*let mut file  =  *///OpenOptions::new().create(true).write(true).append(true).open("foo.txt").unwrap();
-     // Ok(())
-     return return_days;
-  }
-  
-  fn check_if_exists(search_str:&str)-> bool {
-      let contents = fs::read_to_string("foo.txt").expect("Unable to open file");
-      for  line in contents.lines() {
-      if line.contains(search_str) {
-          return true;
-       }
-      }
+fn writefl(str: &str) -> i32 {
+    let mut days = 30;
+    let data: String = str.to_owned() + "->31\n";
+    if Path::new("foo.txt").exists() {
+        let mut file1 = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .append(true)
+            .open("foo.txt")
+            .unwrap();
+        if !check_if_exists(&str) {
+            file1.write_all(data.as_bytes()).expect("err");
+        } else {
+            days = seek_and_changefl3(&str, "foo.txt");
+        }
+    } else {
+        let mut file1 = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .append(true)
+            .open("foo.txt")
+            .unwrap();
+        file1.write_all(data.as_bytes()).expect("err");
+    }
+
+    return days;
+}
+
+fn check_if_exists(search_str: &str) -> bool {
+    let contents = fs::read_to_string("foo.txt").expect("Unable to open file");
+    for line in contents.lines() {
+        if line.contains(search_str) {
+            return true;
+        }
+    }
     false
-  }
-  
-  fn readfl() -> String{
-      let  file = File::open("foo.txt").expect("Unable to open file");
-      let mut contents = String::new();
-      let mut buf_reader =  BufReader::new(file);
-      buf_reader.read_to_string(&mut contents).expect("Unable to open file");
-     /* let splitter: Vec<&str>  =  contents.split("->").collect();
-      let id =  splitter[0];
-      let days = splitter[1];
-      println!("contents: {} {}", id, days);
-      Ok(())*/
-      return contents;
-  }
-  
-  
-  fn seek_and_changefl3(searched_item: &str, file_name: &str) -> i32{
-      let contents = fs::read_to_string(file_name).expect("err");
-      let mut new:String = String::new();
-      let mut buff:String = String::new();
-      let mut return_days = 30;
-  
-    for  line in  contents.lines() {
-     // println!(" {} ",line);
-      if line.contains(searched_item){
-          let days_remaining:String = line.chars().skip(line.len()-2).take(2).collect();
-          let mut my_int = days_remaining.parse::<i32>().unwrap();
-          my_int -=1;
-          println!(" {} ",days_remaining);
-          buff.push_str(line.replace(&days_remaining, &my_int.to_string()).as_str());
-          buff.push_str("\n");
-          return_days = my_int;
-      }else{
-          buff.push_str(line);
-          buff.push_str("\n")
-      }
+}
+#[warn(dead_code)]
+fn readfl() -> String {
+    let file = File::open("foo.txt").expect("Unable to open file");
+    let mut contents = String::new();
+    let mut buf_reader = BufReader::new(file);
+    buf_reader
+        .read_to_string(&mut contents)
+        .expect("Unable to open file");
+    return contents;
+}
+
+fn seek_and_changefl3(searched_item: &str, file_name: &str) -> i32 {
+    // std::io::Result<()>{
+    let contents = fs::read_to_string(file_name).expect("err");
+    let mut new: String = String::new();
+    let mut buff: String = String::new();
+    let mut return_days: i32 = 30;
+
+    for line in contents.lines() {
+        if line.contains(searched_item) {
+            let mut days_remaining: String = line.chars().skip(line.len() - 2).take(2).collect();
+            let mut my_int;
+            let mut substring: String;
+            if !days_remaining.contains(">") {
+                my_int = days_remaining.parse::<i32>().unwrap();
+                substring = line.chars().take(line.len() - 2).collect();
+            } else {
+                days_remaining = line.chars().skip(line.len() - 1).take(1).collect();
+                println!(" {} ", days_remaining);
+                my_int = days_remaining.parse::<i32>().unwrap();
+                substring = line.chars().take(line.len() - 1).collect();
+            }
+            my_int -= 1;
+            println!(" {} ", days_remaining);
+            substring.push_str(&my_int.to_string());
+
+            buff.push_str(substring.as_str());
+            buff.push_str("\n");
+            return_days = my_int;
+        } else {
+            buff.push_str(line);
+            buff.push_str("\n")
+        }
     }
     new.push_str(&buff);
-     // dbg!(&contents, &new);
-  
-     let mut file = OpenOptions::new().write(true).truncate(true).open(file_name).expect("err");
-      file.write(new.as_bytes()).expect("err");
-  
-  //  Ok(())
+
+    let mut file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(file_name)
+        .expect("err");
+    file.write(new.as_bytes()).expect("err");
     return return_days;
-  }
-  
+}

@@ -1,4 +1,5 @@
 use bytes::Bytes;
+use clokwerk::{Scheduler, TimeUnits};
 use hyper::{
     body::to_bytes,
     service::{make_service_fn, service_fn},
@@ -6,7 +7,16 @@ use hyper::{
 };
 use route_recognizer::Params;
 use router::Router;
+
+use std::fs;
+
+use std::fs::OpenOptions;
+use std::io::prelude::*;
+
 use std::sync::Arc;
+
+use std::time::Duration;
+// Import week days and WeekDay
 
 mod handler;
 mod router;
@@ -27,6 +37,10 @@ async fn main() {
     router.get("/test", Box::new(handler::test_handler));
     router.post("/send", Box::new(handler::send_handler));
     router.get("/params/:some_param", Box::new(handler::param_handler));
+    let mut scheduler = Scheduler::new();
+    scheduler.every(24.hours()).run(|| seek_and_changefl_all());
+    /*let thread_handle = */
+    scheduler.watch_thread(Duration::from_millis(100));
 
     let shared_router = Arc::new(router);
     let new_service = make_service_fn(move |_| {
@@ -45,6 +59,7 @@ async fn main() {
     let addr = "0.0.0.0:8000".parse().expect("address creation works");
     let server = Server::bind(&addr).serve(new_service);
     println!("Listening on http://{}", addr);
+
     let _ = server.await;
 }
 
@@ -90,4 +105,41 @@ impl Context {
         };
         Ok(serde_json::from_slice(&body_bytes)?)
     }
+}
+
+fn seek_and_changefl_all() {
+    let contents = fs::read_to_string("foo.txt").expect("err");
+    let mut new: String = String::new();
+    let mut buff: String = String::new();
+
+    for line in contents.lines() {
+        // println!(" {} ",line);
+        /* if line.contains(searched_item){*/
+        let mut days_remaining: String = line.chars().skip(line.len() - 2).take(2).collect();
+        let mut my_int;
+        let mut substring: String;
+        if !days_remaining.contains(">") {
+            my_int = days_remaining.parse::<i32>().unwrap();
+            substring = line.chars().take(line.len() - 2).collect();
+        } else {
+            days_remaining = line.chars().skip(line.len() - 1).take(1).collect();
+            //println!(" {} ",days_remaining);
+            my_int = days_remaining.parse::<i32>().unwrap();
+            substring = line.chars().take(line.len() - 1).collect();
+        }
+        my_int -= 1;
+        println!("this is the shit {} ", days_remaining);
+        substring.push_str(&my_int.to_string());
+
+        buff.push_str(substring.as_str());
+        buff.push_str("\n");
+    }
+    new.push_str(&buff);
+
+    let mut file = OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open("foo.txt")
+        .expect("err");
+    file.write(new.as_bytes()).expect("err");
 }
