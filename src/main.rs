@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 use bytes::Bytes;
 use clokwerk::{Scheduler, TimeUnits};
 use hyper::{
@@ -24,6 +25,8 @@ mod router;
 type Response = hyper::Response<hyper::Body>;
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
+
+
 #[derive(Clone, Debug)]
 pub struct AppState {
     pub state_thing: String,
@@ -39,8 +42,7 @@ async fn main() {
     router.get("/params/:some_param", Box::new(handler::param_handler));
     let mut scheduler = Scheduler::new();
     scheduler.every(24.hours()).run(|| seek_and_changefl_all());
-    /*let thread_handle = */
-    scheduler.watch_thread(Duration::from_millis(100));
+    /*let _thread_handle =*/ scheduler.watch_thread(Duration::from_millis(100));
 
     let shared_router = Arc::new(router);
     let new_service = make_service_fn(move |_| {

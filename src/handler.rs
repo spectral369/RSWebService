@@ -67,7 +67,11 @@ fn read_line(src_str: &str) -> i32 {
                 days_remaining = line.chars().skip(line.len() - 1).take(1).collect();
                 my_int = days_remaining.parse::<i32>().unwrap();
             }
+            if (my_int - 1) == 0 {
+                my_int = 0;
+            }else{
             my_int -= 1;
+            }
             println!(" {} ", days_remaining);
             return_days = my_int;
         }
@@ -112,7 +116,7 @@ fn check_if_exists(search_str: &str) -> bool {
     }
     false
 }
-#[warn(dead_code)]
+#[allow(dead_code)]
 fn readfl() -> String {
     let file = File::open("foo.txt").expect("Unable to open file");
     let mut contents = String::new();
@@ -144,7 +148,11 @@ fn seek_and_changefl3(searched_item: &str, file_name: &str) -> i32 {
                 my_int = days_remaining.parse::<i32>().unwrap();
                 substring = line.chars().take(line.len() - 1).collect();
             }
+            if (my_int - 1) == 0 {
+                my_int = 0;
+            }else{
             my_int -= 1;
+            }
             println!(" {} ", days_remaining);
             substring.push_str(&my_int.to_string());
 
