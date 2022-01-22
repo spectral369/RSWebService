@@ -4,7 +4,7 @@ use clokwerk::{Scheduler, TimeUnits};
 use hyper::{
     body::to_bytes,
     service::{make_service_fn, service_fn},
-    Body, Request, Server,
+    Body, Request, server::Server,
 };
 use route_recognizer::Params;
 use router::Router;
@@ -42,7 +42,9 @@ async fn main() {
     router.get("/params/:some_param", Box::new(handler::param_handler));
     let mut scheduler = Scheduler::new();
     scheduler.every(24.hours()).run(|| seek_and_changefl_all());
-    /*let _thread_handle =*/ scheduler.watch_thread(Duration::from_millis(100));
+    let _thread_handle =
+    scheduler.watch_thread(Duration::from_millis(1000));
+
 
     let shared_router = Arc::new(router);
     let new_service = make_service_fn(move |_| {

@@ -2,7 +2,7 @@ use crate::{Context, Response};
 use async_trait::async_trait;
 use futures::future::Future;
 use hyper::{Method, StatusCode};
-use route_recognizer::{Match, Params, Router as InternalRouter};
+use route_recognizer::{Params, Router as InternalRouter};
 use std::collections::HashMap;
 
 #[async_trait]
@@ -26,7 +26,6 @@ pub struct RouterMatch<'a> {
     pub handler: &'a dyn Handler,
     pub params: Params,
 }
-
 pub struct Router {
     method_map: HashMap<Method, InternalRouter<Box<dyn Handler>>>,
 }
@@ -52,23 +51,12 @@ impl Router {
             .add(path, handler)
     }
 
-    pub fn route(&self, path: &str, method: &Method) -> RouterMatch<'_> {
-        if let Some(Match { handler, params }) = self
-            .method_map
-            .get(method)
-            .and_then(|r| r.recognize(path).ok())
-        {
-            RouterMatch {
-                handler: &**handler,
-                params,
-            }
-        } else {
-            RouterMatch {
-                handler: &not_found_handler,
-                params: Params::new(),
-            }
-        }
+pub fn route(&self, path: &str, method: &Method) -> RouterMatch<'_> {
+    match self.method_map.get(method).and_then(|r| r.recognize(path).ok()) {
+        Some(route) => RouterMatch { handler: &***route.handler(), params: route.params().clone() },
+        None => RouterMatch { handler: &not_found_handler, params: Params::new() }
     }
+}
 }
 
 async fn not_found_handler(_cx: Context) -> Response {

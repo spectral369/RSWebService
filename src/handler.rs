@@ -107,7 +107,12 @@ fn writefl(str: &str) -> i32 {
     return days;
 }
 
+
 fn check_if_exists(search_str: &str) -> bool {
+    if !Path::new("foo.txt").exists() {
+        File::create("foo.txt").expect("errors");
+    }
+
     let contents = fs::read_to_string("foo.txt").expect("Unable to open file");
     for line in contents.lines() {
         if line.contains(search_str) {
