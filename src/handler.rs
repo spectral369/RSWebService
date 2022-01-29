@@ -51,7 +51,7 @@ pub async fn param_handler(ctx: Context) -> String {
     } else {
         days = read_line(param);
     }
-    format!("param called, param was: {}", days)
+    format!("Days remaining for id {} : {}",param, days)
 }
 
 fn read_line(src_str: &str) -> i32 {
@@ -69,10 +69,10 @@ fn read_line(src_str: &str) -> i32 {
             }
             if (my_int - 1) == 0 {
                 my_int = 0;
-            }else{
-            my_int -= 1;
-            }
-            println!(" {} ", days_remaining);
+            }/*else{
+         //   my_int -= 1;
+            }*/
+            println!("Days remaining {} ", days_remaining);
             return_days = my_int;
         }
     }

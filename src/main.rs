@@ -41,7 +41,7 @@ async fn main() {
     router.post("/send", Box::new(handler::send_handler));
     router.get("/params/:some_param", Box::new(handler::param_handler));
     let mut scheduler = Scheduler::new();
-    scheduler.every(24.hours()).run(|| seek_and_changefl_all());
+    scheduler.every(1.days()).run(|| seek_and_changefl_all());
     let _thread_handle =
     scheduler.watch_thread(Duration::from_millis(1000));
 
@@ -115,10 +115,8 @@ fn seek_and_changefl_all() {
     let contents = fs::read_to_string("foo.txt").expect("err");
     let mut new: String = String::new();
     let mut buff: String = String::new();
-
+    println!("Change Start...");
     for line in contents.lines() {
-        // println!(" {} ",line);
-        /* if line.contains(searched_item){*/
         let mut days_remaining: String = line.chars().skip(line.len() - 2).take(2).collect();
         let mut my_int;
         let mut substring: String;
@@ -127,12 +125,15 @@ fn seek_and_changefl_all() {
             substring = line.chars().take(line.len() - 2).collect();
         } else {
             days_remaining = line.chars().skip(line.len() - 1).take(1).collect();
-            //println!(" {} ",days_remaining);
             my_int = days_remaining.parse::<i32>().unwrap();
             substring = line.chars().take(line.len() - 1).collect();
         }
-        my_int -= 1;
-        println!("this is the shit {} ", days_remaining);
+        if (my_int - 1) <= 0 {
+            my_int = 0;
+        }else{
+            my_int -= 1;
+        }
+        println!("Days Remaining  = {} ",my_int);
         substring.push_str(&my_int.to_string());
 
         buff.push_str(substring.as_str());

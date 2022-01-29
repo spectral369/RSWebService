@@ -1,4 +1,5 @@
-asdasdas98d9as->14
-sds98dsds9->15
-tst334->31
-ttest56555555->31
+asdasdas98d9as->10
+sds98dsds9->0
+tst334->20
+ttest56555555->20
+test3->20
